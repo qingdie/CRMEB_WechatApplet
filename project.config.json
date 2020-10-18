@@ -8,24 +8,31 @@
 		"es6": true,
 		"enhance": true,
 		"postcss": true,
+		"preloadBackgroundData": false,
 		"minified": true,
 		"newFeature": true,
 		"coverView": true,
 		"nodeModules": true,
 		"autoAudits": false,
+		"showShadowRootInWxmlPanel": true,
+		"scopeDataCheck": false,
 		"uglifyFileName": true,
 		"checkInvalidKey": true,
 		"checkSiteMap": true,
 		"uploadWithSourceMap": true,
+		"compileHotReLoad": false,
 		"babelSetting": {
 			"ignore": [],
 			"disablePlugins": [],
 			"outputPath": ""
-		}
+		},
+		"useIsolateContext": true,
+		"useCompilerModule": false,
+		"userConfirmedUseCompilerModuleSwitch": false
 	},
 	"compileType": "miniprogram",
-	"libVersion": "2.7.7",
-	"appid": "wx6ca9ac1a01f617a1",
+	"libVersion": "2.9.4",
+	"appid": "wxad6b2125cfdf7a2d",
 	"projectname": "crmeb_v3.0%E5%BC%80%E6%BA%90",
 	"debugOptions": {
 		"hidedInDevtools": []
