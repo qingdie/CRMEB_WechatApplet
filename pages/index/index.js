@@ -1,8 +1,9 @@
 const app = getApp();
 
-import { getIndexData, getCoupons } from '../../api/api.js';
+import { getIndexData, getCoupons, getTemlIds, getLiveList} from '../../api/api.js';
+import { CACHE_SUBSCRIBE_MESSAGE } from '../../config.js';
 import Util from '../../utils/util.js';
-
+import wxh from '../../utils/wxh.js';
 Page({
   /**
    * 页面的初始数据
@@ -34,7 +35,12 @@ Page({
     },
     window: false,
     iShidden:false,
-    navH: ""
+    navH: "",
+    newGoodsBananr:'',
+    selfLongitude: '',
+    selfLatitude: '',
+    liveList: [],
+    liveInfo:{},
   },
   closeTip:function(){
     wx.setStorageSync('msg_key',true);
@@ -46,12 +52,54 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
+    wxh.selfLocation(1);
     this.setData({
       navH: app.globalData.navHeight
     });
     if (options.spid) app.globalData.spid = options.spid;
     if (options.scene) app.globalData.code = decodeURIComponent(options.scene);
     if (wx.getStorageSync('msg_key')) this.setData({ iShidden:true});
+    this.getTemlIds();
+    this.getLiveList();
+  },
+  getLiveList:function(){
+    getLiveList(1,20).then(res=>{
+      if(res.data.length == 1){
+        this.setData({liveInfo:res.data[0]});
+      }else{
+        this.setData({liveList:res.data});
+      }
+    }).catch(res=>{
+
+    })
+  },
+  /**
+   * 商品详情跳转
+   */
+  goDetail: function (e) {
+    let item = e.currentTarget.dataset.items
+    if (item.activity && item.activity.type === "1") {
+      wx.navigateTo({
+        url: `/pages/activity/goods_seckill_details/index?id=${item.activity.id}&time=${item.activity.time}&status=1`
+      });
+    } else if (item.activity && item.activity.type === "2") {
+      wx.navigateTo({ url: `/pages/activity/goods_bargain_details/index?id=${item.activity.id}` });
+    } else if (item.activity && item.activity.type === "3") {
+      wx.navigateTo({
+        url: `/pages/activity/goods_combination_details/index?id=${item.activity.id}`
+      });
+    } else {
+      wx.navigateTo({ url: `/pages/goods_details/index?id=${item.id}` });
+    }
+  },
+  getTemlIds(){
+    let messageTmplIds = wx.getStorageSync(CACHE_SUBSCRIBE_MESSAGE);
+    if (!messageTmplIds){
+      getTemlIds().then(res=>{
+        if (res.data) 
+          wx.setStorageSync(CACHE_SUBSCRIBE_MESSAGE, JSON.stringify(res.data));
+      })
+    }
   },
   catchTouchMove: function (res) {
     return false
@@ -100,6 +148,7 @@ Page({
         benefit: res.data.benefit,
         logoUrl: res.data.logoUrl,
         couponList: res.data.couponList,
+        newGoodsBananr: res.data.newGoodsBananr
       });
       wx.getSetting({
         success(res) {

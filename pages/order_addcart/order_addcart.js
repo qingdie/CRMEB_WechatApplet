@@ -1,7 +1,6 @@
 
 import { getCartList, getCartCounts, changeCartNum, cartDel} from '../../api/order.js';
 import { getProductHot, collectAll  } from '../../api/store.js';
-import { setFormId } from '../../api/api.js';
 
 const app = getApp();
 const util = require('../../utils/util.js');
@@ -39,7 +38,25 @@ Page({
     });
     if (app.globalData.token) that.setData({ iShidden:true});
   },
-
+  /**
+   * input阻止冒泡
+   * 
+  */
+  proventD: function () { },
+   /**
+   * 手动输入数量失焦事件
+   */
+  inputBlur(e) {
+    if (e.detail.value < 1) {
+      let index = e.currentTarget.dataset.index;
+      let item = this.data.cartList.valid[index];
+      item.cart_num = 1;
+      if (item.cart_num) this.setCartNum(item.id, item.cart_num);
+      let itemData = "cartList.valid[" + index + "]";
+      this.setData({ [itemData]: item });
+      this.switchSelect();
+    }
+  },
   /**
    * 关闭授权
    * 
@@ -47,10 +64,8 @@ Page({
   onCloseAuto: function () {
     this.setData({ iShidden: true });
   },
-
   subDel:function (event) {
-    var formId = event.detail.formId, that = this, selectValue = that.data.selectValue;
-    setFormId(formId);
+    let that = this, selectValue = that.data.selectValue;
     if (selectValue.length > 0) 
       cartDel(selectValue).then(res=>{
         that.getCartList();
@@ -68,8 +83,7 @@ Page({
     return productId;
   },
   subCollect: function (event){
-    var formId = event.detail.formId, that = this, selectValue = that.data.selectValue;
-    setFormId(formId);
+    let that = this, selectValue = that.data.selectValue;
     if (selectValue.length > 0) {
       var selectValueProductId = that.getSelectValueProductId();
       collectAll(that.getSelectValueProductId().join(',')).then(res=>{
@@ -82,8 +96,7 @@ Page({
     }
   },
   subOrder: function (event){
-    var formId = event.detail.formId, that = this, selectValue = that.data.selectValue;
-    setFormId(formId);
+    let that = this, selectValue = that.data.selectValue;
     if (selectValue.length > 0){
       wx.navigateTo({url:'/pages/order_confirm/index?cartId=' + selectValue.join(',')});
     }else{
@@ -154,7 +167,6 @@ Page({
     var status = false;
     var index = event.currentTarget.dataset.index;
     var item = that.data.cartList.valid[index];
-    console.log(item);
     item.cart_num = item.cart_num - 1;
     if (item.cart_num < 1) status = true;
     if (item.cart_num <= 1) { 
@@ -169,11 +181,24 @@ Page({
       });
     }
   },
+  /**
+   * 购物车手动填写
+   * 
+  */
+  iptCartNum: function (e) {
+    let index = e.currentTarget.dataset.index;
+    let item = this.data.cartList.valid[index];
+    item.cart_num = e.detail.value;
+    if (item.cart_num) this.setCartNum(item.id, item.cart_num);
+    let itemData = "cartList.valid[" + index + "]";
+    this.setData({ [itemData]: item });
+    this.switchSelect();
+  },
   addCart: function (event) {
     var that = this;
     var index = event.currentTarget.dataset.index;
     var item = that.data.cartList.valid[index];
-    item.cart_num = item.cart_num + 1;
+    item.cart_num = parseInt(item.cart_num) + 1;
     var productInfo = item.productInfo;
     if (productInfo.hasOwnProperty('attrInfo') && item.cart_num >= item.productInfo.attrInfo.stock) {
       item.cart_num = item.productInfo.attrInfo.stock;
